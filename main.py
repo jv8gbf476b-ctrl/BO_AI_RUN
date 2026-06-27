@@ -74,8 +74,25 @@ elif up_prob >= 0.70:
 else:
     signal = "⚪ 見送り"
 
+signal_id = data.index[-1].strftime("%Y%m%d_%H%M")
+
+confidence = max(up_prob, down_prob)
+
+if confidence >= 0.85:
+    confidence_text = "★★★★★"
+elif confidence >= 0.80:
+    confidence_text = "★★★★☆"
+elif confidence >= 0.75:
+    confidence_text = "★★★☆☆"
+elif confidence >= 0.70:
+    confidence_text = "★★☆☆☆"
+else:
+    confidence_text = "★☆☆☆☆"
+
 message = f"""
 🤖 BO_AI_RUN
+
+ID: {signal_id}
 
 現在時刻: {data.index[-1]}
 現在価格: {data['Close'].iloc[-1]:.3f}
@@ -83,8 +100,13 @@ message = f"""
 📈 上昇確率: {up_prob*100:.2f}%
 📉 下降確率: {down_prob*100:.2f}%
 
+信頼度: {confidence_text}
+
 判定: {signal}
 """
+
+
+
 
 print(message)
 
