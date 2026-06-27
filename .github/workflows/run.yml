@@ -1,17 +1,25 @@
 name: BO_AI_RUN
 
 on:
-  workflow_dispatch:
   schedule:
     - cron: "0 * * * *"
+  workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Test Telegram
-        run: |
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.BOT_TOKEN }}/sendMessage" \
-          -d chat_id="${{ secrets.CHAT_ID }}" \
-          -d text="✅ GitHub Actions テスト通知成功！"
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install yfinance lightgbm pandas scikit-learn requests
+
+      - name: Run AI
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python main.py
