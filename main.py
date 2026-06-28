@@ -1,4 +1,5 @@
 import os
+from zoneinfo import ZoneInfo
 import requests
 import yfinance as yf
 import pandas as pd
@@ -74,7 +75,9 @@ elif up_prob >= 0.70:
 else:
     signal = "⚪ 見送り"
 
-signal_id = data.index[-1].strftime("%Y%m%d_%H%M")
+jst_time = data.index[-1].tz_convert(ZoneInfo("Asia/Tokyo"))
+
+signal_id = jst_time.strftime("%Y%m%d_%H%M")
 
 confidence = max(up_prob, down_prob)
 
@@ -94,7 +97,7 @@ message = f"""
 
 ID: {signal_id}
 
-現在時刻: {data.index[-1]}
+現在時刻: {jst_time}
 現在価格: {data['Close'].iloc[-1]:.3f}
 
 📈 上昇確率: {up_prob*100:.2f}%
