@@ -1,0 +1,2 @@
+id,entry_time,judge_time,signal,entry_close,result_close,up_prob,down_prob,confidence,result
+20260627_0600,2026-06-27T06:00:00+09:00,2026-06-29T08:00:00+09:00,HIGH,161.72999572753906,161.79600524902344,0.785044,0.214956,0.785044,WIN
