@@ -1,5 +1,5 @@
 """
-BO_AI v4
+BO_AI v4.1
 grading.py
 採点ロジック
 """
@@ -26,19 +26,10 @@ def judge_signal(pending, result_time, result_close):
 
     if signal == "HIGH":
         win = actual_direction == "HIGH"
-        reason = "予測HIGHと実際HIGHが一致"
-
     elif signal == "LOW":
         win = actual_direction == "LOW"
-        reason = "予測LOWと実際LOWが一致"
-
     else:
         win = actual_direction == "FLAT"
-
-        if win:
-            reason = "見送り正解"
-        else:
-            reason = f"見送り中に{actual_direction}方向へ動いた"
 
     result = "WIN" if win else "LOSE"
 
@@ -59,15 +50,26 @@ def judge_signal(pending, result_time, result_close):
         "down_prob": pending["down_prob"],
         "confidence": pending["confidence"],
         "delay_minutes": pending.get("delay_minutes", ""),
-        "result": result
+        "result": result,
     })
 
     report = make_report_text()
 
+    if signal == "SKIP":
+        if actual_direction == "FLAT":
+            reason = "見送り正解"
+        else:
+            reason = f"見送り中に{actual_direction}へ動いた"
+    else:
+        if win:
+            reason = "AI予測成功"
+        else:
+            reason = "AI予測失敗"
+
     message = f"""
 📊 BO_AI 採点結果
 
-ID: {pending["id"]}
+ID: {pending['id']}
 
 AI判断 : {signal}
 実際 : {actual_direction}
