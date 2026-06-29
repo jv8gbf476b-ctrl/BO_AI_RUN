@@ -7,7 +7,6 @@ AI学習・予測
 from lightgbm import LGBMClassifier
 from sklearn.model_selection import train_test_split
 
-# AIが使う特徴量
 FEATURES = [
     "Open",
     "High",
@@ -35,26 +34,41 @@ FEATURES = [
 ]
 
 
-def train_model(data):
+def prepare_dataset(data):
     """
-    モデル学習
+    学習データを準備
     """
+    data["Target"] = (
+        data["Close"].shift(-1) > data["Close"]
+    ).astype(int)
+
+    data = data.dropna()
 
     X = data[FEATURES]
     y = data["Target"]
+
+    return X, y, data
+
+
+def train_model(data):
+    """
+    AI学習
+    """
+
+    X, y, _ = prepare_dataset(data)
 
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
         test_size=0.2,
-        shuffle=False
+        shuffle=False,
     )
 
     model = LGBMClassifier(
         n_estimators=100,
         learning_rate=0.05,
         random_state=42,
-        verbose=-1
+        verbose=-1,
     )
 
     model.fit(X_train, y_train)
@@ -69,9 +83,12 @@ def predict_signal(model, data):
 
     latest = data.iloc[[-1]][FEATURES]
 
-    prob = model.predict_proba(latest)[0]
+    down_prob, up_prob = model.predict_proba(latest)[0]
+
+    confidence = max(up_prob, down_prob)
 
     return {
-        "down_prob": float(prob[0]),
-        "up_prob": float(prob[1]),
+        "up_prob": float(up_prob),
+        "down_prob": float(down_prob),
+        "confidence": float(confidence),
     }
