@@ -1,5 +1,5 @@
 """
-BO_AI v4.9
+BO_AI v5.0
 report.py
 成績レポート・分析
 """
@@ -31,16 +31,6 @@ def confidence_rank(confidence):
     if confidence >= 0.60:
         return "★★☆☆☆"
     return "★☆☆☆☆"
-
-
-def make_section_report(title, df):
-    total, wins, losses, win_rate = calc_win_rate(df)
-
-    return f"""
-{title}
-{total}戦 {wins}勝 {losses}敗
-勝率 : {win_rate:.1f}%
-"""
 
 
 def make_signal_report(df):
@@ -81,13 +71,15 @@ def make_rank_report(df):
             continue
 
         total, wins, losses, win_rate = calc_win_rate(rank_df)
+        avg_conf = rank_df["confidence"].mean() * 100
 
         text += (
             f"{rank} : "
             f"{total}戦 "
             f"{wins}勝 "
             f"{losses}敗 "
-            f"勝率{win_rate:.1f}%\n"
+            f"勝率{win_rate:.1f}% "
+            f"(平均{avg_conf:.1f}%)\n"
         )
 
     return text
