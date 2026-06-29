@@ -1,5 +1,5 @@
 """
-BO_AI v4.6
+BO_AI v4.7
 model.py
 AI学習・予測
 """
@@ -110,13 +110,15 @@ def train_model(data):
     )
 
     model = LGBMClassifier(
-        n_estimators=300,
-        learning_rate=0.03,
+        n_estimators=500,
+        learning_rate=0.02,
         num_leaves=63,
         max_depth=-1,
-        min_child_samples=20,
-        subsample=0.8,
-        colsample_bytree=0.8,
+        min_child_samples=15,
+        subsample=0.9,
+        colsample_bytree=0.9,
+        reg_alpha=0.1,
+        reg_lambda=0.1,
         random_state=42,
         verbose=-1,
     )
