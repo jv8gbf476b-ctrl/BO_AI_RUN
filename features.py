@@ -1,5 +1,5 @@
 """
-BO_AI v4.2
+BO_AI v4.3
 features.py
 特徴量生成
 """
@@ -41,6 +41,40 @@ def build_features(data: pd.DataFrame) -> pd.DataFrame:
 
     data["ATR"] = tr.rolling(14).mean()
 
+    # ===== ADX =====
+    plus_dm = data["High"].diff()
+    minus_dm = -data["Low"].diff()
+
+    plus_dm = plus_dm.where(
+        (plus_dm > minus_dm) & (plus_dm > 0),
+        0
+    )
+
+    minus_dm = minus_dm.where(
+        (minus_dm > plus_dm) & (minus_dm > 0),
+        0
+    )
+
+    atr_sum = tr.rolling(14).sum()
+
+    plus_di = 100 * (
+        plus_dm.rolling(14).sum() / atr_sum
+    )
+
+    minus_di = 100 * (
+        minus_dm.rolling(14).sum() / atr_sum
+    )
+
+    dx = (
+        (plus_di - minus_di).abs()
+        /
+        (plus_di + minus_di)
+    ) * 100
+
+    data["PLUS_DI"] = plus_di
+    data["MINUS_DI"] = minus_di
+    data["ADX"] = dx.rolling(14).mean()
+
     # ===== 時間 =====
     data["Hour"] = data.index.hour
     data["DayOfWeek"] = data.index.dayofweek
@@ -71,17 +105,9 @@ def build_features(data: pd.DataFrame) -> pd.DataFrame:
     data["MACD_Hist"] = data["MACD"] - data["MACD_Signal"]
 
     # ===== MA乖離率 =====
-    data["MA5_Gap"] = (
-        data["Close"] - data["MA5"]
-    ) / data["MA5"]
-
-    data["MA10_Gap"] = (
-        data["Close"] - data["MA10"]
-    ) / data["MA10"]
-
-    data["EMA20_Gap"] = (
-        data["Close"] - data["EMA20"]
-    ) / data["EMA20"]
+    data["MA5_Gap"] = (data["Close"] - data["MA5"]) / data["MA5"]
+    data["MA10_Gap"] = (data["Close"] - data["MA10"]) / data["MA10"]
+    data["EMA20_Gap"] = (data["Close"] - data["EMA20"]) / data["EMA20"]
 
     # ===== Momentum =====
     data["Momentum3"] = data["Close"] - data["Close"].shift(3)
@@ -91,12 +117,11 @@ def build_features(data: pd.DataFrame) -> pd.DataFrame:
     # ===== ローソク足 =====
     data["Body"] = data["Close"] - data["Open"]
     data["BodyAbs"] = data["Body"].abs()
-
     data["Range"] = data["High"] - data["Low"]
 
     data["UpperWick"] = (
-        data["High"] -
-        data[["Open", "Close"]].max(axis=1)
+        data["High"]
+        - data[["Open", "Close"]].max(axis=1)
     )
 
     data["LowerWick"] = (
@@ -104,26 +129,13 @@ def build_features(data: pd.DataFrame) -> pd.DataFrame:
         - data["Low"]
     )
 
-    data["BodyRatio"] = (
-        data["BodyAbs"] /
-        data["Range"]
-    )
-
-    data["UpperWickRatio"] = (
-        data["UpperWick"] /
-        data["Range"]
-    )
-
-    data["LowerWickRatio"] = (
-        data["LowerWick"] /
-        data["Range"]
-    )
+    data["BodyRatio"] = data["BodyAbs"] / data["Range"]
+    data["UpperWickRatio"] = data["UpperWick"] / data["Range"]
+    data["LowerWickRatio"] = data["LowerWick"] / data["Range"]
 
     # ===== ボラティリティ =====
     data["Volatility10"] = (
-        data["Return"]
-        .rolling(10)
-        .std()
+        data["Return"].rolling(10).std()
     )
 
     # ===== トレンド =====
@@ -139,17 +151,14 @@ def build_features(data: pd.DataFrame) -> pd.DataFrame:
         data["Close"] > data["MA20"]
     ).astype(int)
 
-    # ===== RSI傾き =====
+    # ===== 傾き =====
     data["RSI_Slope"] = data["RSI"].diff()
-
-    # ===== MACD傾き =====
     data["MACD_Slope"] = data["MACD"].diff()
 
-    # ===== 20本高値・安値 =====
+    # ===== ドンチャン =====
     data["High20"] = data["High"].rolling(20).max()
     data["Low20"] = data["Low"].rolling(20).min()
 
-    # ===== ドンチャンチャネル =====
     data["DonchianWidth"] = (
         data["High20"] - data["Low20"]
     )
