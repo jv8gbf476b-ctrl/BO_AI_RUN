@@ -2,9 +2,7 @@ name: BO_AI_RUN
 
 on:
   schedule:
-  
-  - cron: "7 * * * *"
-  - cron: "37 * * * *"
+    - cron: "3 * * * *"
   workflow_dispatch:
 
 permissions:
