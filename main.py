@@ -170,7 +170,7 @@ ID: {pending["id"]}
     print(message)
 
     clear_pending()
-    
+
 def predict_new(data, model, features):
     latest_time = data.index[-1]
     latest = data.iloc[[-1]][features]
@@ -193,6 +193,7 @@ def predict_new(data, model, features):
     jst_time = latest_time.tz_convert(ZoneInfo("Asia/Tokyo"))
     now_jst = datetime.now(ZoneInfo("Asia/Tokyo"))
     delay_minutes = int((now_jst - jst_time.to_pydatetime()).total_seconds() / 60)
+
     signal_id = jst_time.strftime("%Y%m%d_%H%M")
     confidence_text = make_confidence_text(confidence)
 
@@ -217,9 +218,10 @@ def predict_new(data, model, features):
 
 ID: {signal_id}
 
-現在時刻: {jst_time}
+足時刻: {jst_time}
 通知時刻: {now_jst.strftime("%Y-%m-%d %H:%M:%S")}
 遅延: {delay_minutes}分
+
 現在価格: {data['Close'].iloc[-1]:.3f}
 
 📈 上昇確率: {up_prob*100:.2f}%
@@ -234,11 +236,9 @@ ID: {signal_id}
 
     if signal == "SKIP":
         print("⚪ 見送りも記録しました。Telegramにも通知します")
-    
-send_telegram(message)
-print("✅ Telegramへ送信しました")
 
-    
+    send_telegram(message)
+    print("✅ Telegramへ送信しました")
 def main():
     data = fetch_data()
     grade_pending(data)
