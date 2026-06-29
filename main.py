@@ -233,11 +233,11 @@ ID: {signal_id}
     print(message)
 
     if signal == "SKIP":
-        print("⚪ 見送りも記録しました。通知はしません")
-        return
+    print("⚪ 見送りも記録しました。Telegramにも通知します")
+    
+send_telegram(message)
+print("✅ Telegramへ送信しました")
 
-    send_telegram(message)
-    print("✅ Telegramへ送信しました")
     
 def main():
     data = fetch_data()
