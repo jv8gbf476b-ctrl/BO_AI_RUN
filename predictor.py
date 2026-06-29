@@ -1,5 +1,5 @@
 """
-BO_AI v4.2
+BO_AI v4.3
 predictor.py
 予測・通知・pending保存
 """
@@ -22,8 +22,7 @@ def make_confidence_text(confidence):
         return "★★★☆☆"
     elif confidence >= 0.60:
         return "★★☆☆☆"
-    else:
-        return "★☆☆☆☆"
+    return "★☆☆☆☆"
 
 
 def decide_signal(up_prob, down_prob):
@@ -44,10 +43,11 @@ def predict_and_notify(model, data):
     up_prob = result["up_prob"]
     down_prob = result["down_prob"]
     confidence = result["confidence"]
+    importance = result["importance"]
 
     signal, signal_text = decide_signal(
         up_prob,
-        down_prob
+        down_prob,
     )
 
     latest_time = data.index[-1]
@@ -83,7 +83,12 @@ def predict_and_notify(model, data):
             "delay_minutes": delay_minutes,
         })
 
-    confidence_text = make_confidence_text(confidence)
+    importance_text = "\n".join(
+        [
+            f"{i+1}. {name} ({score})"
+            for i, (name, score) in enumerate(importance)
+        ]
+    )
 
     message = f"""
 🤖 BO_AI_RUN
@@ -99,9 +104,12 @@ ID: {signal_id}
 📈 上昇確率 : {up_prob*100:.2f}%
 📉 下降確率 : {down_prob*100:.2f}%
 
-信頼度 : {confidence_text}
+信頼度 : {make_confidence_text(confidence)}
 
 判定 : {signal_text}
+
+📊 AIが重視した特徴量 TOP5
+{importance_text}
 """
 
     print(message)
