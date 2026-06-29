@@ -167,7 +167,20 @@ def build_features(data: pd.DataFrame) -> pd.DataFrame:
     data["ATR_Ratio"] = (
         data["ATR"] / data["Close"]
     )
+    # ===== Stochastic =====
+    lowest14 = data["Low"].rolling(14).min()
+    highest14 = data["High"].rolling(14).max()
 
+    data["Stoch_K"] = (
+        (data["Close"] - lowest14)
+        / (highest14 - lowest14)
+    ) * 100
+
+    data["Stoch_D"] = (
+        data["Stoch_K"]
+        .rolling(3)
+        .mean()
+    )
     # ===== ROC =====
     data["ROC10"] = (
         (
