@@ -1,5 +1,5 @@
 """
-BO_AI v4.3
+BO_AI v4.4
 model.py
 AI学習・予測
 """
@@ -28,6 +28,10 @@ FEATURES = [
 
     "ATR",
     "ATR_Ratio",
+
+    "PLUS_DI",
+    "MINUS_DI",
+    "ADX",
 
     "Hour",
     "DayOfWeek",
