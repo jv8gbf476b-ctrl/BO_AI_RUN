@@ -1,5 +1,5 @@
 """
-BO_AI v4.1
+BO_AI v4.2
 predictor.py
 予測・通知・pending保存
 """
@@ -27,6 +27,7 @@ def make_confidence_text(confidence):
 
 
 def decide_signal(up_prob, down_prob):
+
     if up_prob >= THRESHOLD:
         return "HIGH", "📈 HIGH エントリー"
 
@@ -68,7 +69,7 @@ def predict_and_notify(model, data):
 
     pending = load_pending()
 
-    if not pending or pending.get("id") != signal_id:
+    if pending is None or pending.get("id") != signal_id:
 
         save_pending({
             "id": signal_id,
@@ -82,15 +83,15 @@ def predict_and_notify(model, data):
             "delay_minutes": delay_minutes,
         })
 
+    confidence_text = make_confidence_text(confidence)
+
     message = f"""
 🤖 BO_AI_RUN
 
 ID: {signal_id}
 
 足時刻: {jst_time.strftime("%Y-%m-%d %H:%M")}
-
 通知時刻: {now_jst.strftime("%Y-%m-%d %H:%M:%S")}
-
 遅延: {delay_minutes}分
 
 現在価格: {latest_close:.3f}
@@ -98,7 +99,7 @@ ID: {signal_id}
 📈 上昇確率 : {up_prob*100:.2f}%
 📉 下降確率 : {down_prob*100:.2f}%
 
-信頼度 : {make_confidence_text(confidence)}
+信頼度 : {confidence_text}
 
 判定 : {signal_text}
 """
@@ -106,3 +107,10 @@ ID: {signal_id}
     print(message)
 
     send_telegram(message)
+
+    return {
+        "signal": signal,
+        "confidence": confidence,
+        "up_prob": up_prob,
+        "down_prob": down_prob,
+    }
