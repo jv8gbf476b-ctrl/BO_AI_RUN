@@ -74,7 +74,8 @@ def build_features(data: pd.DataFrame) -> pd.DataFrame:
     data["PLUS_DI"] = plus_di
     data["MINUS_DI"] = minus_di
     data["ADX"] = dx.rolling(14).mean()
-
+    # ===== ADX傾き =====
+    data["ADX_Slope"] = data["ADX"].diff()
     # ===== 時間 =====
     data["Hour"] = data.index.hour
     data["DayOfWeek"] = data.index.dayofweek
