@@ -6,6 +6,7 @@ import pandas as pd
 from zoneinfo import ZoneInfo
 from lightgbm import LGBMClassifier
 from sklearn.model_selection import train_test_split
+from datetime import datetime
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
