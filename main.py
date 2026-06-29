@@ -198,10 +198,10 @@ def predict_new(data, model, features):
     confidence_text = make_confidence_text(confidence)
 
     pending = load_pending()
-    if pending and pending.get("id") == signal_id:
-        print("同じ足のシグナルは既に保存済みなので保存しません")
-        return
+    pending = load_pending()
+already_saved = pending and pending.get("id") == signal_id
 
+if not already_saved:
     save_pending({
         "id": signal_id,
         "entry_time": latest_time.isoformat(),
@@ -212,6 +212,10 @@ def predict_new(data, model, features):
         "down_prob": round(down_prob, 6),
         "confidence": round(confidence, 6)
     })
+else:
+    print("同じ足のシグナルは保存済みですが、通知は送ります")
+
+    
 
     message = f"""
 🤖 BO_AI_RUN
