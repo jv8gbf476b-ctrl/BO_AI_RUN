@@ -198,8 +198,7 @@ def predict_new(data, model, features):
     confidence_text = make_confidence_text(confidence)
 
     pending = load_pending()
-    pending = load_pending()
-already_saved = pending and pending.get("id") == signal_id
+    already_saved = pending and pending.get("id") == signal_id
 
 if not already_saved:
     save_pending({
