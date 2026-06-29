@@ -1,5 +1,5 @@
 """
-BO_AI v4.8
+BO_AI v4.9
 report.py
 成績レポート・分析
 """
@@ -33,6 +33,81 @@ def confidence_rank(confidence):
     return "★☆☆☆☆"
 
 
+def make_section_report(title, df):
+    total, wins, losses, win_rate = calc_win_rate(df)
+
+    return f"""
+{title}
+{total}戦 {wins}勝 {losses}敗
+勝率 : {win_rate:.1f}%
+"""
+
+
+def make_signal_report(df):
+    text = "\n📌 判定別\n"
+
+    for signal in ["HIGH", "LOW", "SKIP"]:
+        signal_df = df[df["signal"] == signal]
+
+        if signal_df.empty:
+            continue
+
+        total, wins, losses, win_rate = calc_win_rate(signal_df)
+
+        text += (
+            f"{signal} : "
+            f"{total}戦 "
+            f"{wins}勝 "
+            f"{losses}敗 "
+            f"勝率{win_rate:.1f}%\n"
+        )
+
+    return text
+
+
+def make_rank_report(df):
+    if "confidence" not in df.columns:
+        return ""
+
+    data = df.copy()
+    data["rank"] = data["confidence"].apply(confidence_rank)
+
+    text = "\n⭐ 信頼度別\n"
+
+    for rank in ["★★★★★", "★★★★☆", "★★★☆☆", "★★☆☆☆", "★☆☆☆☆"]:
+        rank_df = data[data["rank"] == rank]
+
+        if rank_df.empty:
+            continue
+
+        total, wins, losses, win_rate = calc_win_rate(rank_df)
+
+        text += (
+            f"{rank} : "
+            f"{total}戦 "
+            f"{wins}勝 "
+            f"{losses}敗 "
+            f"勝率{win_rate:.1f}%\n"
+        )
+
+    return text
+
+
+def make_recent_report(df, count):
+    recent = df.tail(count)
+
+    if recent.empty:
+        return ""
+
+    total, wins, losses, win_rate = calc_win_rate(recent)
+
+    return f"""
+🕒 直近{count}戦
+{total}戦 {wins}勝 {losses}敗
+勝率 : {win_rate:.1f}%
+"""
+
+
 def make_report_text():
     df = load_history()
 
@@ -48,58 +123,13 @@ def make_report_text():
 勝ち : {wins}
 負け : {losses}
 勝率 : {win_rate:.1f}%
-
 """
 
-    report += "📌 判定別\n"
+    report += make_signal_report(df)
+    report += make_rank_report(df)
 
-    for signal in ["HIGH", "LOW", "SKIP"]:
-        signal_df = df[df["signal"] == signal]
-
-        if signal_df.empty:
-            continue
-
-        s_total, s_wins, s_losses, s_rate = calc_win_rate(signal_df)
-
-        report += (
-            f"{signal} : "
-            f"{s_total}戦 "
-            f"{s_wins}勝 "
-            f"{s_losses}敗 "
-            f"勝率{s_rate:.1f}%\n"
-        )
-
-    if "confidence" in df.columns:
-        report += "\n⭐ 信頼度別\n"
-
-        df = df.copy()
-        df["rank"] = df["confidence"].apply(confidence_rank)
-
-        for rank in ["★★★★★", "★★★★☆", "★★★☆☆", "★★☆☆☆", "★☆☆☆☆"]:
-            rank_df = df[df["rank"] == rank]
-
-            if rank_df.empty:
-                continue
-
-            r_total, r_wins, r_losses, r_rate = calc_win_rate(rank_df)
-
-            report += (
-                f"{rank} : "
-                f"{r_total}戦 "
-                f"{r_wins}勝 "
-                f"{r_losses}敗 "
-                f"勝率{r_rate:.1f}%\n"
-            )
-
-    recent = df.tail(20)
-
-    if not recent.empty:
-        r_total, r_wins, r_losses, r_rate = calc_win_rate(recent)
-
-        report += f"""
-\n🕒 直近20戦
-{r_total}戦 {r_wins}勝 {r_losses}敗
-勝率 : {r_rate:.1f}%
-"""
+    report += make_recent_report(df, 20)
+    report += make_recent_report(df, 50)
+    report += make_recent_report(df, 100)
 
     return report
