@@ -239,6 +239,8 @@ ID: {signal_id}
 
     send_telegram(message)
     print("✅ Telegramへ送信しました")
+
+
 def main():
     data = fetch_data()
     grade_pending(data)
