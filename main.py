@@ -232,7 +232,9 @@ ID: {signal_id}
         return
 
     send_telegram(message)
-    print("✅ Telegramへ送信しました")def predict_new(data, model, features):
+    print("✅ Telegramへ送信しました")
+    
+    def predict_new(data, model, features):
     latest_time = data.index[-1]
     latest = data.iloc[[-1]][features]
     prob = model.predict_proba(latest)[0]
