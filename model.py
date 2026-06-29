@@ -1,5 +1,5 @@
 """
-BO_AI v4
+BO_AI v4.1
 model.py
 AI学習・予測
 """
@@ -12,25 +12,56 @@ FEATURES = [
     "High",
     "Low",
     "Close",
+
     "MA5",
     "MA10",
+    "MA20",
     "EMA20",
+    "EMA50",
+
     "Return",
+    "Return3",
+    "Return5",
+
     "RSI",
     "ATR",
+
     "Hour",
     "DayOfWeek",
+
     "BB_Middle",
     "BB_Upper",
     "BB_Lower",
+    "BB_Width",
+    "BB_Position",
+
+    "MACD",
+    "MACD_Signal",
+    "MACD_Hist",
+
     "MA5_Gap",
     "MA10_Gap",
+    "EMA20_Gap",
+
     "Momentum3",
     "Momentum5",
+    "Momentum10",
+
     "Body",
+    "BodyAbs",
+    "Range",
+
     "UpperWick",
     "LowerWick",
+
+    "BodyRatio",
+    "UpperWickRatio",
+    "LowerWickRatio",
+
     "Volatility10",
+
+    "TrendUp",
+    "CloseAboveMA20",
 ]
 
 
@@ -38,6 +69,7 @@ def prepare_dataset(data):
     """
     学習データを準備
     """
+
     data["Target"] = (
         data["Close"].shift(-1) > data["Close"]
     ).astype(int)
@@ -65,8 +97,10 @@ def train_model(data):
     )
 
     model = LGBMClassifier(
-        n_estimators=100,
-        learning_rate=0.05,
+        n_estimators=200,
+        learning_rate=0.03,
+        num_leaves=31,
+        max_depth=-1,
         random_state=42,
         verbose=-1,
     )
