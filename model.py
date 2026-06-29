@@ -1,5 +1,5 @@
 """
-BO_AI v4.2
+BO_AI v4.3
 model.py
 AI学習・予測
 """
@@ -77,9 +77,6 @@ FEATURES = [
 
 
 def prepare_dataset(data):
-    """
-    学習データ準備
-    """
 
     data["Target"] = (
         data["Close"].shift(-1) > data["Close"]
@@ -94,9 +91,6 @@ def prepare_dataset(data):
 
 
 def train_model(data):
-    """
-    モデル学習
-    """
 
     X, y, _ = prepare_dataset(data)
 
@@ -124,19 +118,36 @@ def train_model(data):
     return model
 
 
+def get_feature_importance(model):
+
+    importance = sorted(
+        zip(
+            FEATURES,
+            model.feature_importances_,
+        ),
+        key=lambda x: x[1],
+        reverse=True,
+    )
+
+    return importance
+
+
 def predict_signal(model, data):
-    """
-    最新足を予測
-    """
 
     latest = data.iloc[[-1]][FEATURES]
 
     down_prob, up_prob = model.predict_proba(latest)[0]
 
-    confidence = max(up_prob, down_prob)
+    confidence = max(
+        up_prob,
+        down_prob,
+    )
+
+    importance = get_feature_importance(model)[:5]
 
     return {
         "up_prob": float(up_prob),
         "down_prob": float(down_prob),
         "confidence": float(confidence),
+        "importance": importance,
     }
