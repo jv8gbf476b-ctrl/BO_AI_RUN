@@ -1,5 +1,5 @@
 """
-BO_AI v4.4
+BO_AI v4.5
 model.py
 AI学習・予測
 """
@@ -75,6 +75,9 @@ FEATURES = [
     "High20",
     "Low20",
     "DonchianWidth",
+
+    "Stoch_K",
+    "Stoch_D",
 
     "ROC10",
 ]
