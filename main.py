@@ -109,7 +109,6 @@ def train_model(data):
     )
 
     model.fit(X_train, y_train)
-
     return model, features
 
 def grade_pending(data):
@@ -125,29 +124,41 @@ def grade_pending(data):
         print("前回シグナルはまだ判定できません")
         return
 
-    result_row = future.iloc[0]
     result_time = future.index[0]
-    result_close = float(result_row["Close"])
+    result_close = float(future.iloc[0]["Close"])
 
     entry_close = float(pending["entry_close"])
     signal = pending["signal"]
 
-    if signal == "HIGH":
-        win = result_close > entry_close
-    elif signal == "LOW":
-        win = result_close < entry_close
+    if result_close > entry_close:
+        actual_direction = "HIGH"
+    elif result_close < entry_close:
+        actual_direction = "LOW"
     else:
-        win = False
+        actual_direction = "FLAT"
+
+    if signal == "HIGH":
+        win = actual_direction == "HIGH"
+        reason = "予測方向と実際の方向が一致"
+    elif signal == "LOW":
+        win = actual_direction == "LOW"
+        reason = "予測方向と実際の方向が一致"
+    else:
+        win = actual_direction == "FLAT"
+        reason = "見送り中に値動きあり。チャンス逃し" if not win else "値動きが小さく見送り正解"
 
     result = "WIN" if win else "LOSE"
+    price_diff = result_close - entry_close
 
     append_history({
         "id": pending["id"],
         "entry_time": pending["entry_time_jst"],
         "judge_time": result_time.tz_convert(ZoneInfo("Asia/Tokyo")).isoformat(),
         "signal": signal,
+        "actual_direction": actual_direction,
         "entry_close": entry_close,
         "result_close": result_close,
+        "price_diff": round(price_diff, 6),
         "up_prob": pending["up_prob"],
         "down_prob": pending["down_prob"],
         "confidence": pending["confidence"],
@@ -159,16 +170,19 @@ def grade_pending(data):
 
 ID: {pending["id"]}
 
-予測: {signal}
+AI判断: {signal}
+実際の方向: {actual_direction}
+
 エントリー価格: {entry_close:.3f}
 判定価格: {result_close:.3f}
+価格差: {price_diff:+.3f}
 
 結果: {"✅ 勝ち" if win else "❌ 負け"}
+理由: {reason}
 """
 
     send_telegram(message)
     print(message)
-
     clear_pending()
 
 def predict_new(data, model, features):
@@ -200,21 +214,19 @@ def predict_new(data, model, features):
     pending = load_pending()
     already_saved = pending and pending.get("id") == signal_id
 
-if not already_saved:
-    save_pending({
-        "id": signal_id,
-        "entry_time": latest_time.isoformat(),
-        "entry_time_jst": jst_time.isoformat(),
-        "entry_close": float(data["Close"].iloc[-1]),
-        "signal": signal,
-        "up_prob": round(up_prob, 6),
-        "down_prob": round(down_prob, 6),
-        "confidence": round(confidence, 6)
-    })
-else:
-    print("同じ足のシグナルは保存済みですが、通知は送ります")
-
-    
+    if not already_saved:
+        save_pending({
+            "id": signal_id,
+            "entry_time": latest_time.isoformat(),
+            "entry_time_jst": jst_time.isoformat(),
+            "entry_close": float(data["Close"].iloc[-1]),
+            "signal": signal,
+            "up_prob": round(up_prob, 6),
+            "down_prob": round(down_prob, 6),
+            "confidence": round(confidence, 6)
+        })
+    else:
+        print("同じ足のシグナルは保存済みですが、通知は送ります")
 
     message = f"""
 🤖 BO_AI_RUN
@@ -242,7 +254,6 @@ ID: {signal_id}
 
     send_telegram(message)
     print("✅ Telegramへ送信しました")
-
 
 def main():
     data = fetch_data()
