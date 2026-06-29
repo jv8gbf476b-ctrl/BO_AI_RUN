@@ -16,11 +16,15 @@ TICKER = "JPY=X"
 HISTORY_FILE = "history.csv"
 PENDING_FILE = "pending_signal.json"
 
+
 def send_telegram(text):
-    requests.post(
+    response = requests.post(
         f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-        data={"chat_id": CHAT_ID, "text": text}
+        data={"chat_id": CHAT_ID, "text": text},
+        timeout=20
     )
+    response.raise_for_status()
+
 
 def make_confidence_text(confidence):
     if confidence >= 0.85:
@@ -33,19 +37,23 @@ def make_confidence_text(confidence):
         return "★★☆☆☆"
     return "★☆☆☆☆"
 
+
 def load_pending():
     if os.path.exists(PENDING_FILE):
-        with open(PENDING_FILE, "r") as f:
+        with open(PENDING_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
     return None
 
+
 def save_pending(data):
-    with open(PENDING_FILE, "w") as f:
+    with open(PENDING_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
 
 def clear_pending():
     if os.path.exists(PENDING_FILE):
         os.remove(PENDING_FILE)
+
 
 def append_history(row):
     df = pd.DataFrame([row])
@@ -54,8 +62,53 @@ def append_history(row):
     else:
         df.to_csv(HISTORY_FILE, index=False)
 
+
+def make_report_text():
+    if not os.path.exists(HISTORY_FILE):
+        return "📊 成績: まだ記録なし"
+
+    df = pd.read_csv(HISTORY_FILE)
+
+    if df.empty or "result" not in df.columns:
+        return "📊 成績: まだ記録なし"
+
+    total = len(df)
+    wins = len(df[df["result"] == "WIN"])
+    losses = len(df[df["result"] == "LOSE"])
+    win_rate = wins / total * 100 if total else 0
+
+    report = f"""
+📊 BO_AI 成績レポート
+
+累計: {total}戦 {wins}勝 {losses}敗
+勝率: {win_rate:.1f}%
+"""
+
+    for sig in ["HIGH", "LOW", "SKIP"]:
+        if "signal" not in df.columns:
+            continue
+
+        sub = df[df["signal"] == sig]
+        if len(sub) > 0:
+            sub_wins = len(sub[sub["result"] == "WIN"])
+            sub_rate = sub_wins / len(sub) * 100
+            label = "見送り" if sig == "SKIP" else sig
+            report += f"{label}: {len(sub)}戦 {sub_wins}勝 勝率{sub_rate:.1f}%\n"
+
+    return report
+
+
 def fetch_data():
-    data = yf.download(TICKER, period="180d", interval="1h", auto_adjust=False)
+    data = yf.download(
+        TICKER,
+        period="180d",
+        interval="1h",
+        auto_adjust=False,
+        progress=False
+    )
+
+    if data.empty:
+        raise RuntimeError("yfinanceからデータを取得できませんでした")
 
     if isinstance(data.columns, pd.MultiIndex):
         data.columns = data.columns.get_level_values(0)
@@ -87,6 +140,7 @@ def fetch_data():
 
     return data
 
+
 def train_model(data):
     features = [
         "Open", "High", "Low", "Close",
@@ -98,7 +152,10 @@ def train_model(data):
     y = data["Target"]
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, shuffle=False
+        X,
+        y,
+        test_size=0.2,
+        shuffle=False
     )
 
     model = LGBMClassifier(
@@ -111,10 +168,12 @@ def train_model(data):
     model.fit(X_train, y_train)
     return model, features
 
+
 def grade_pending(data):
     pending = load_pending()
 
     if not pending:
+        print("前回シグナルなし")
         return
 
     entry_time = pd.Timestamp(pending["entry_time"])
@@ -126,7 +185,6 @@ def grade_pending(data):
 
     result_time = future.index[0]
     result_close = float(future.iloc[0]["Close"])
-
     entry_close = float(pending["entry_close"])
     signal = pending["signal"]
 
@@ -139,13 +197,13 @@ def grade_pending(data):
 
     if signal == "HIGH":
         win = actual_direction == "HIGH"
-        reason = "予測方向と実際の方向が一致"
+        reason = "予測HIGHと実際HIGHが一致"
     elif signal == "LOW":
         win = actual_direction == "LOW"
-        reason = "予測方向と実際の方向が一致"
+        reason = "予測LOWと実際LOWが一致"
     else:
         win = actual_direction == "FLAT"
-        reason = "見送り中に値動きあり。チャンス逃し" if not win else "値動きが小さく見送り正解"
+        reason = "値動きが小さく見送り正解" if win else f"見送り中に{actual_direction}方向へ動いたためチャンス逃し"
 
     result = "WIN" if win else "LOSE"
     price_diff = result_close - entry_close
@@ -162,8 +220,11 @@ def grade_pending(data):
         "up_prob": pending["up_prob"],
         "down_prob": pending["down_prob"],
         "confidence": pending["confidence"],
+        "delay_minutes": pending.get("delay_minutes", ""),
         "result": result
     })
+
+    report = make_report_text()
 
     message = f"""
 📊 BO_AI 採点結果
@@ -179,11 +240,14 @@ AI判断: {signal}
 
 結果: {"✅ 勝ち" if win else "❌ 負け"}
 理由: {reason}
+
+{report}
 """
 
     send_telegram(message)
     print(message)
     clear_pending()
+
 
 def predict_new(data, model, features):
     latest_time = data.index[-1]
@@ -223,7 +287,8 @@ def predict_new(data, model, features):
             "signal": signal,
             "up_prob": round(up_prob, 6),
             "down_prob": round(down_prob, 6),
-            "confidence": round(confidence, 6)
+            "confidence": round(confidence, 6),
+            "delay_minutes": delay_minutes
         })
     else:
         print("同じ足のシグナルは保存済みですが、通知は送ります")
@@ -237,7 +302,7 @@ ID: {signal_id}
 通知時刻: {now_jst.strftime("%Y-%m-%d %H:%M:%S")}
 遅延: {delay_minutes}分
 
-現在価格: {data['Close'].iloc[-1]:.3f}
+現在価格: {data["Close"].iloc[-1]:.3f}
 
 📈 上昇確率: {up_prob*100:.2f}%
 📉 下降確率: {down_prob*100:.2f}%
@@ -255,11 +320,13 @@ ID: {signal_id}
     send_telegram(message)
     print("✅ Telegramへ送信しました")
 
+
 def main():
     data = fetch_data()
     grade_pending(data)
     model, features = train_model(data)
     predict_new(data, model, features)
+
 
 if __name__ == "__main__":
     main()
