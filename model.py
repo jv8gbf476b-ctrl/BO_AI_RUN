@@ -1,5 +1,5 @@
 """
-BO_AI v4.5
+BO_AI v4.6
 model.py
 AI学習・予測
 """
@@ -32,6 +32,7 @@ FEATURES = [
     "PLUS_DI",
     "MINUS_DI",
     "ADX",
+    "ADX_Slope",
 
     "Hour",
     "DayOfWeek",
