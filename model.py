@@ -1,5 +1,5 @@
 """
-BO_AI v4.1
+BO_AI v4.2
 model.py
 AI学習・予測
 """
@@ -24,7 +24,10 @@ FEATURES = [
     "Return5",
 
     "RSI",
+    "RSI_Slope",
+
     "ATR",
+    "ATR_Ratio",
 
     "Hour",
     "DayOfWeek",
@@ -38,6 +41,7 @@ FEATURES = [
     "MACD",
     "MACD_Signal",
     "MACD_Hist",
+    "MACD_Slope",
 
     "MA5_Gap",
     "MA10_Gap",
@@ -61,13 +65,20 @@ FEATURES = [
     "Volatility10",
 
     "TrendUp",
+    "EMA_Cross",
     "CloseAboveMA20",
+
+    "High20",
+    "Low20",
+    "DonchianWidth",
+
+    "ROC10",
 ]
 
 
 def prepare_dataset(data):
     """
-    学習データを準備
+    学習データ準備
     """
 
     data["Target"] = (
@@ -84,7 +95,7 @@ def prepare_dataset(data):
 
 def train_model(data):
     """
-    AI学習
+    モデル学習
     """
 
     X, y, _ = prepare_dataset(data)
@@ -97,10 +108,13 @@ def train_model(data):
     )
 
     model = LGBMClassifier(
-        n_estimators=200,
+        n_estimators=300,
         learning_rate=0.03,
-        num_leaves=31,
+        num_leaves=63,
         max_depth=-1,
+        min_child_samples=20,
+        subsample=0.8,
+        colsample_bytree=0.8,
         random_state=42,
         verbose=-1,
     )
