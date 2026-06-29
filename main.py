@@ -55,19 +55,62 @@ def clear_pending():
         os.remove(PENDING_FILE)
 
 
+def normalize_history_file():
+    if not os.path.exists(HISTORY_FILE):
+        return
+
+    columns = [
+        "id", "entry_time", "judge_time", "signal", "actual_direction",
+        "entry_close", "result_close", "price_diff",
+        "up_prob", "down_prob", "confidence", "delay_minutes", "result"
+    ]
+
+    try:
+        df = pd.read_csv(HISTORY_FILE, on_bad_lines="skip")
+    except Exception:
+        backup_name = "history_broken.csv"
+        os.replace(HISTORY_FILE, backup_name)
+        pd.DataFrame(columns=columns).to_csv(HISTORY_FILE, index=False)
+        print(f"history.csvが壊れていたので {backup_name} に退避しました")
+        return
+
+    for col in columns:
+        if col not in df.columns:
+            df[col] = ""
+
+    df = df[columns]
+    df.to_csv(HISTORY_FILE, index=False)
+
+
 def append_history(row):
-    df = pd.DataFrame([row])
+    columns = [
+        "id", "entry_time", "judge_time", "signal", "actual_direction",
+        "entry_close", "result_close", "price_diff",
+        "up_prob", "down_prob", "confidence", "delay_minutes", "result"
+    ]
+
+    normalize_history_file()
+
+    row_df = pd.DataFrame([row])
+    for col in columns:
+        if col not in row_df.columns:
+            row_df[col] = ""
+    row_df = row_df[columns]
+
     if os.path.exists(HISTORY_FILE):
-        df.to_csv(HISTORY_FILE, mode="a", header=False, index=False)
+        row_df.to_csv(HISTORY_FILE, mode="a", header=False, index=False)
     else:
-        df.to_csv(HISTORY_FILE, index=False)
+        row_df.to_csv(HISTORY_FILE, index=False)
 
 
 def make_report_text():
     if not os.path.exists(HISTORY_FILE):
         return "📊 成績: まだ記録なし"
 
-    df = pd.read_csv(HISTORY_FILE)
+    try:
+        df = pd.read_csv(HISTORY_FILE, on_bad_lines="skip")
+    except Exception:
+        return "📊 成績: history.csv読込エラー。次回保存時に修復します"
 
     if df.empty or "result" not in df.columns:
         return "📊 成績: まだ記録なし"
@@ -84,16 +127,14 @@ def make_report_text():
 勝率: {win_rate:.1f}%
 """
 
-    for sig in ["HIGH", "LOW", "SKIP"]:
-        if "signal" not in df.columns:
-            continue
-
-        sub = df[df["signal"] == sig]
-        if len(sub) > 0:
-            sub_wins = len(sub[sub["result"] == "WIN"])
-            sub_rate = sub_wins / len(sub) * 100
-            label = "見送り" if sig == "SKIP" else sig
-            report += f"{label}: {len(sub)}戦 {sub_wins}勝 勝率{sub_rate:.1f}%\n"
+    if "signal" in df.columns:
+        for sig in ["HIGH", "LOW", "SKIP"]:
+            sub = df[df["signal"] == sig]
+            if len(sub) > 0:
+                sub_wins = len(sub[sub["result"] == "WIN"])
+                sub_rate = sub_wins / len(sub) * 100
+                label = "見送り" if sig == "SKIP" else sig
+                report += f"{label}: {len(sub)}戦 {sub_wins}勝 勝率{sub_rate:.1f}%\n"
 
     return report
 
