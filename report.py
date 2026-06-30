@@ -1,5 +1,5 @@
 """
-BO_AI v5.0
+BO_AI v5.1
 report.py
 成績レポート・分析
 """
@@ -31,6 +31,22 @@ def confidence_rank(confidence):
     if confidence >= 0.60:
         return "★★☆☆☆"
     return "★☆☆☆☆"
+
+
+def confidence_band(confidence):
+    confidence = float(confidence)
+
+    if confidence >= 0.90:
+        return "90%以上"
+    if confidence >= 0.80:
+        return "80〜90%"
+    if confidence >= 0.75:
+        return "75〜80%"
+    if confidence >= 0.70:
+        return "70〜75%"
+    if confidence >= 0.60:
+        return "60〜70%"
+    return "60%未満"
 
 
 def make_signal_report(df):
@@ -85,6 +101,41 @@ def make_rank_report(df):
     return text
 
 
+def make_confidence_band_report(df):
+    if "confidence" not in df.columns:
+        return ""
+
+    data = df.copy()
+    data["band"] = data["confidence"].apply(confidence_band)
+
+    text = "\n🎯 確率帯別\n"
+
+    for band in [
+        "90%以上",
+        "80〜90%",
+        "75〜80%",
+        "70〜75%",
+        "60〜70%",
+        "60%未満",
+    ]:
+        band_df = data[data["band"] == band]
+
+        if band_df.empty:
+            continue
+
+        total, wins, losses, win_rate = calc_win_rate(band_df)
+
+        text += (
+            f"{band} : "
+            f"{total}戦 "
+            f"{wins}勝 "
+            f"{losses}敗 "
+            f"勝率{win_rate:.1f}%\n"
+        )
+
+    return text
+
+
 def make_recent_report(df, count):
     recent = df.tail(count)
 
@@ -119,6 +170,7 @@ def make_report_text():
 
     report += make_signal_report(df)
     report += make_rank_report(df)
+    report += make_confidence_band_report(df)
 
     report += make_recent_report(df, 20)
     report += make_recent_report(df, 50)
