@@ -1,5 +1,5 @@
 """
-BO_AI v5.1
+BO_AI v5.2
 report.py
 成績レポート・分析
 """
@@ -7,13 +7,25 @@ report.py
 from history import load_history
 
 
+def get_trade_df(df):
+    if df.empty:
+        return df
+
+    return df[df["result"] != "NO_TRADE"]
+
+
 def calc_win_rate(df):
     if df.empty:
         return 0, 0, 0, 0.0
 
-    total = len(df)
-    wins = len(df[df["result"] == "WIN"])
-    losses = len(df[df["result"] == "LOSE"])
+    trade_df = get_trade_df(df)
+
+    if trade_df.empty:
+        return 0, 0, 0, 0.0
+
+    total = len(trade_df)
+    wins = len(trade_df[trade_df["result"] == "WIN"])
+    losses = len(trade_df[trade_df["result"] == "LOSE"])
     win_rate = wins / total * 100 if total else 0.0
 
     return total, wins, losses, win_rate
@@ -58,6 +70,10 @@ def make_signal_report(df):
         if signal_df.empty:
             continue
 
+        if signal == "SKIP":
+            text += f"SKIP : {len(signal_df)}回 見送り\n"
+            continue
+
         total, wins, losses, win_rate = calc_win_rate(signal_df)
 
         text += (
@@ -75,7 +91,11 @@ def make_rank_report(df):
     if "confidence" not in df.columns:
         return ""
 
-    data = df.copy()
+    data = get_trade_df(df.copy())
+
+    if data.empty:
+        return "\n⭐ 信頼度別\nエントリー記録なし\n"
+
     data["rank"] = data["confidence"].apply(confidence_rank)
 
     text = "\n⭐ 信頼度別\n"
@@ -105,7 +125,11 @@ def make_confidence_band_report(df):
     if "confidence" not in df.columns:
         return ""
 
-    data = df.copy()
+    data = get_trade_df(df.copy())
+
+    if data.empty:
+        return "\n🎯 確率帯別\nエントリー記録なし\n"
+
     data["band"] = data["confidence"].apply(confidence_band)
 
     text = "\n🎯 確率帯別\n"
@@ -137,10 +161,13 @@ def make_confidence_band_report(df):
 
 
 def make_recent_report(df, count):
-    recent = df.tail(count)
+    recent = get_trade_df(df.tail(count))
 
     if recent.empty:
-        return ""
+        return f"""
+🕒 直近{count}戦
+エントリー記録なし
+"""
 
     total, wins, losses, win_rate = calc_win_rate(recent)
 
@@ -158,14 +185,16 @@ def make_report_text():
         return "📊 成績: まだ記録なし"
 
     total, wins, losses, win_rate = calc_win_rate(df)
+    skip_count = len(df[df["result"] == "NO_TRADE"])
 
     report = f"""
 📊 BO_AI 成績分析
 
-累計 : {total}戦
+累計エントリー : {total}戦
 勝ち : {wins}
 負け : {losses}
 勝率 : {win_rate:.1f}%
+見送り : {skip_count}回
 """
 
     report += make_signal_report(df)
