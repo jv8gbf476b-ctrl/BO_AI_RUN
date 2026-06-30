@@ -1,5 +1,5 @@
 """
-BO_AI v5.2
+BO_AI v5.3
 report.py
 成績レポート・分析
 """
@@ -11,7 +11,10 @@ def get_trade_df(df):
     if df.empty:
         return df
 
-    return df[df["result"] != "NO_TRADE"]
+    return df[
+        (df["result"].isin(["WIN", "LOSE"])) &
+        (df["signal"] != "SKIP")
+    ]
 
 
 def calc_win_rate(df):
@@ -165,14 +168,14 @@ def make_recent_report(df, count):
 
     if recent.empty:
         return f"""
-🕒 直近{count}戦
+🕒 直近{count}件
 エントリー記録なし
 """
 
     total, wins, losses, win_rate = calc_win_rate(recent)
 
     return f"""
-🕒 直近{count}戦
+🕒 直近{count}件内のエントリー
 {total}戦 {wins}勝 {losses}敗
 勝率 : {win_rate:.1f}%
 """
@@ -185,7 +188,12 @@ def make_report_text():
         return "📊 成績: まだ記録なし"
 
     total, wins, losses, win_rate = calc_win_rate(df)
-    skip_count = len(df[df["result"] == "NO_TRADE"])
+    skip_count = len(
+        df[
+            (df["signal"] == "SKIP") |
+            (df["result"] == "NO_TRADE")
+        ]
+    )
 
     report = f"""
 📊 BO_AI 成績分析
