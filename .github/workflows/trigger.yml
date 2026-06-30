@@ -1,0 +1,27 @@
+name: BO_AI_TRIGGER
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install packages
+        run: pip install requests
+
+      - name: Trigger BO_AI_RUN
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: python trigger.py
