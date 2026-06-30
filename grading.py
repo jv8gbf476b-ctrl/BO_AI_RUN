@@ -1,5 +1,5 @@
 """
-BO_AI v4.1
+BO_AI v5.1
 grading.py
 採点ロジック
 """
@@ -24,16 +24,26 @@ def judge_signal(pending, result_time, result_close):
     else:
         actual_direction = "FLAT"
 
-    if signal == "HIGH":
-        win = actual_direction == "HIGH"
-    elif signal == "LOW":
-        win = actual_direction == "LOW"
-    else:
-        win = actual_direction == "FLAT"
-
-    result = "WIN" if win else "LOSE"
-
     price_diff = result_close - entry_close
+
+    if signal == "SKIP":
+        result = "NO_TRADE"
+        win = None
+
+        if actual_direction == "FLAT":
+            reason = "見送り。価格はほぼ動かず"
+        else:
+            reason = f"見送り中に{actual_direction}へ動いた"
+
+    else:
+        if signal == actual_direction:
+            result = "WIN"
+            win = True
+            reason = "AI予測成功"
+        else:
+            result = "LOSE"
+            win = False
+            reason = "AI予測失敗"
 
     append_history({
         "id": pending["id"],
@@ -55,16 +65,12 @@ def judge_signal(pending, result_time, result_close):
 
     report = make_report_text()
 
-    if signal == "SKIP":
-        if actual_direction == "FLAT":
-            reason = "見送り正解"
-        else:
-            reason = f"見送り中に{actual_direction}へ動いた"
+    if result == "NO_TRADE":
+        result_text = "⚪ 見送り"
+    elif result == "WIN":
+        result_text = "✅ 勝ち"
     else:
-        if win:
-            reason = "AI予測成功"
-        else:
-            reason = "AI予測失敗"
+        result_text = "❌ 負け"
 
     message = f"""
 📊 BO_AI 採点結果
@@ -79,7 +85,7 @@ AI判断 : {signal}
 
 価格差 : {price_diff:+.3f}
 
-結果 : {"✅ 勝ち" if win else "❌ 負け"}
+結果 : {result_text}
 
 理由 : {reason}
 
