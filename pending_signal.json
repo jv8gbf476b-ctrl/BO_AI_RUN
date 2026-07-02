@@ -1,11 +1,11 @@
 {
-  "id": "20260702_0700",
-  "entry_time": "2026-07-01T23:00:00+01:00",
-  "entry_time_jst": "2026-07-02T07:00:00+09:00",
-  "entry_close": 162.5279998779297,
+  "id": "20260702_1900",
+  "entry_time": "2026-07-02T11:00:00+01:00",
+  "entry_time_jst": "2026-07-02T19:00:00+09:00",
+  "entry_close": 161.29800415039062,
   "signal": "SKIP",
-  "up_prob": 0.392691,
-  "down_prob": 0.607309,
-  "confidence": 0.607309,
-  "delay_minutes": 51
+  "up_prob": 0.379382,
+  "down_prob": 0.620618,
+  "confidence": 0.620618,
+  "delay_minutes": 16
 }
