@@ -1,11 +1,11 @@
 {
-  "id": "20260722_0800",
-  "entry_time": "2026-07-22T00:00:00+01:00",
-  "entry_time_jst": "2026-07-22T08:00:00+09:00",
-  "entry_close": 163.21400451660156,
-  "signal": "LOW",
-  "up_prob": 0.286267,
-  "down_prob": 0.713733,
-  "confidence": 0.713733,
-  "delay_minutes": 43
+  "id": "20260722_1600",
+  "entry_time": "2026-07-22T08:00:00+01:00",
+  "entry_time_jst": "2026-07-22T16:00:00+09:00",
+  "entry_close": 162.93600463867188,
+  "signal": "SKIP",
+  "up_prob": 0.322658,
+  "down_prob": 0.677342,
+  "confidence": 0.677342,
+  "delay_minutes": 60
 }
