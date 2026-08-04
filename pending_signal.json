@@ -1,11 +1,11 @@
 {
-  "id": "20260805_0400",
-  "entry_time": "2026-08-04T20:00:00+01:00",
-  "entry_time_jst": "2026-08-05T04:00:00+09:00",
-  "entry_close": 157.73300170898438,
+  "id": "20260805_0500",
+  "entry_time": "2026-08-04T21:00:00+01:00",
+  "entry_time_jst": "2026-08-05T05:00:00+09:00",
+  "entry_close": 157.7449951171875,
   "signal": "LOW",
-  "up_prob": 0.187314,
-  "down_prob": 0.812686,
-  "confidence": 0.812686,
-  "delay_minutes": 10
+  "up_prob": 0.206955,
+  "down_prob": 0.793045,
+  "confidence": 0.793045,
+  "delay_minutes": 41
 }
