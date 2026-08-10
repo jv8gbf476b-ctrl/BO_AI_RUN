@@ -1,11 +1,11 @@
 {
-  "id": "20260811_0600",
-  "entry_time": "2026-08-10T22:00:00+01:00",
-  "entry_time_jst": "2026-08-11T06:00:00+09:00",
-  "entry_close": 159.23699951171875,
-  "signal": "SKIP",
-  "up_prob": 0.439181,
-  "down_prob": 0.560819,
-  "confidence": 0.560819,
-  "delay_minutes": 23
+  "id": "20260811_0700",
+  "entry_time": "2026-08-10T23:00:00+01:00",
+  "entry_time_jst": "2026-08-11T07:00:00+09:00",
+  "entry_close": 159.29100036621094,
+  "signal": "LOW",
+  "up_prob": 0.087938,
+  "down_prob": 0.912062,
+  "confidence": 0.912062,
+  "delay_minutes": 5
 }
