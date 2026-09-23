@@ -1,11 +1,11 @@
 {
-  "id": "20260923_2300",
-  "entry_time": "2026-09-23T15:00:00+01:00",
-  "entry_time_jst": "2026-09-23T23:00:00+09:00",
-  "entry_close": 158.2779998779297,
+  "id": "20260924_0300",
+  "entry_time": "2026-09-23T19:00:00+01:00",
+  "entry_time_jst": "2026-09-24T03:00:00+09:00",
+  "entry_close": 158.281005859375,
   "signal": "SKIP",
-  "up_prob": 0.63796,
-  "down_prob": 0.36204,
-  "confidence": 0.63796,
-  "delay_minutes": 34
+  "up_prob": 0.548521,
+  "down_prob": 0.451479,
+  "confidence": 0.548521,
+  "delay_minutes": 35
 }
