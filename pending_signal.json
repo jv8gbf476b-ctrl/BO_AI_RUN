@@ -1,11 +1,11 @@
 {
-  "id": "20261015_1000",
-  "entry_time": "2026-10-15T02:00:00+01:00",
-  "entry_time_jst": "2026-10-15T10:00:00+09:00",
-  "entry_close": 157.61099243164062,
+  "id": "20261015_1500",
+  "entry_time": "2026-10-15T07:00:00+01:00",
+  "entry_time_jst": "2026-10-15T15:00:00+09:00",
+  "entry_close": 157.99400329589844,
   "signal": "HIGH",
-  "up_prob": 0.820714,
-  "down_prob": 0.179286,
-  "confidence": 0.820714,
-  "delay_minutes": 40
+  "up_prob": 0.775124,
+  "down_prob": 0.224876,
+  "confidence": 0.775124,
+  "delay_minutes": 29
 }
