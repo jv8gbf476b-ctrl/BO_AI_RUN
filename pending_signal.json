@@ -1,11 +1,11 @@
 {
-  "id": "20261027_0400",
-  "entry_time": "2026-10-26T19:00:00+00:00",
-  "entry_time_jst": "2026-10-27T04:00:00+09:00",
-  "entry_close": 157.4550018310547,
+  "id": "20261027_0800",
+  "entry_time": "2026-10-26T23:00:00+00:00",
+  "entry_time_jst": "2026-10-27T08:00:00+09:00",
+  "entry_close": 157.56100463867188,
   "signal": "SKIP",
-  "up_prob": 0.539289,
-  "down_prob": 0.460711,
-  "confidence": 0.539289,
-  "delay_minutes": 53
+  "up_prob": 0.375786,
+  "down_prob": 0.624214,
+  "confidence": 0.624214,
+  "delay_minutes": 28
 }
