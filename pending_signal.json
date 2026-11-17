@@ -1,11 +1,11 @@
 {
-  "id": "20261117_2000",
-  "entry_time": "2026-11-17T11:00:00+00:00",
-  "entry_time_jst": "2026-11-17T20:00:00+09:00",
-  "entry_close": 159.17300415039062,
+  "id": "20261118_0400",
+  "entry_time": "2026-11-17T19:00:00+00:00",
+  "entry_time_jst": "2026-11-18T04:00:00+09:00",
+  "entry_close": 159.34100341796875,
   "signal": "SKIP",
-  "up_prob": 0.387317,
-  "down_prob": 0.612683,
-  "confidence": 0.612683,
-  "delay_minutes": 22
+  "up_prob": 0.580027,
+  "down_prob": 0.419973,
+  "confidence": 0.580027,
+  "delay_minutes": 57
 }
