@@ -1,11 +1,11 @@
 {
-  "id": "20261125_2000",
-  "entry_time": "2026-11-25T11:00:00+00:00",
-  "entry_time_jst": "2026-11-25T20:00:00+09:00",
-  "entry_close": 159.33599853515625,
-  "signal": "SKIP",
-  "up_prob": 0.59603,
-  "down_prob": 0.40397,
-  "confidence": 0.59603,
-  "delay_minutes": 27
+  "id": "20261126_0500",
+  "entry_time": "2026-11-25T20:00:00+00:00",
+  "entry_time_jst": "2026-11-26T05:00:00+09:00",
+  "entry_close": 159.2050018310547,
+  "signal": "LOW",
+  "up_prob": 0.058864,
+  "down_prob": 0.941136,
+  "confidence": 0.941136,
+  "delay_minutes": 33
 }
